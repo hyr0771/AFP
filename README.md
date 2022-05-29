@@ -31,7 +31,7 @@ reaction.txt: the detail information of reaction.
 
 compoundName.txt: the list of KEGG ID and metabolite name.
 
-startMetabolitesList.txt: the list of 3201 starting metabolites.
+startMetabolitesList.txt: the list of starting metabolites.
 
 reactions-atomgroupcount.txt: the detail information of the atom group transfer.
 
