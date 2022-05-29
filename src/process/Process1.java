@@ -23,6 +23,7 @@ import entity.DrawThread;
 import entity.Path;
 import entity.Point;
 import entity.Reaction;
+import pic.GraphViz;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -74,7 +75,9 @@ public class Process1 {
 
 	int maxCombination = 10000;
 
-	int minAtomGroupTransfer = 3;
+	int nonConservedMinimalAtomGroups = 3;
+	
+	int conservedMinimalAtomGroups = 3;
 
 	int minPathLength = 2;
 
@@ -108,13 +111,15 @@ public class Process1 {
 	
 	boolean ifCycle = false;///////////////////////////////////
 	
-	boolean ifSpecies = false;///////////////////////////////////
+	boolean ifSpecies = true;///////////////////////////////////
 	
 	boolean keepAtomgroupTransfer = false;///////////////////////////////////
 	
 	boolean saveConserved = false;
 
 	boolean saveNonConserved = false;
+	
+	int drawNpathways = 5;
 	
 	int timeLimit = 1000;/////////////////////////////////////
 	int solutionNumber = 2000;
@@ -188,11 +193,12 @@ public class Process1 {
 	HashMap<String, String> reactionMap = null;
 	//reactionALL-(KEGG)
 	ArrayList<String> reactionALL = null;
+	ArrayList<String> rpairData = null;
 	
-	public void setParameter(String start, String end, int k, int minAtomGroupTransfer, int minPathLength,
-			int maxPathLength, String saveTxtPath, String savePicPath, boolean ifDraw, boolean ifStart, String graPhVizPath, 
-			int timeLimit, boolean ifCycle, boolean ifSpecies, boolean keepAtomgroupTransfer, int solutionNumber, boolean saveConserved, boolean saveNonConserved) {
-		this.keepAtomgroupTransfer = keepAtomgroupTransfer;
+	public void setParameter(String start, String end, int k, int nonConservedMinimalAtomGroups, int conservedMinimalAtomGroups, int minPathLength,
+			int maxPathLength, String saveTxtPath, String savePicPath, boolean ifDraw, int drawNpathways, boolean ifStart, String graPhVizPath, 
+			int timeLimit, boolean ifCycle, boolean ifSpecies, int solutionNumber, boolean saveConserved, boolean saveNonConserved) {
+		this.drawNpathways = drawNpathways;
 		this.saveConserved = saveConserved;
 		this.saveNonConserved = saveNonConserved;
 		this.ifSpecies = ifSpecies;
@@ -202,7 +208,8 @@ public class Process1 {
 		this.start = start;
 		this.end = end;
 		this.k = k;
-		this.minAtomGroupTransfer = minAtomGroupTransfer;
+		this.nonConservedMinimalAtomGroups = nonConservedMinimalAtomGroups;
+		this.conservedMinimalAtomGroups = conservedMinimalAtomGroups;
 		this.minPathLength = minPathLength;
 		this.maxPathLength = maxPathLength;
 		this.ifPreciseFindBranch = ifPreciseFindBranch;
@@ -232,7 +239,9 @@ public class Process1 {
 		parameter = parameter + "\r\n";
 		parameter = parameter + "k:" + k;
 		parameter = parameter + "\r\n";
-		parameter = parameter + "minAtomGroupTransfer:" + minAtomGroupTransfer;
+		parameter = parameter + "nonConservedMinimalAtomGroups:" + nonConservedMinimalAtomGroups;
+		parameter = parameter + "\r\n";
+		parameter = parameter + "conservedMinimalAtomGroups:" + conservedMinimalAtomGroups;
 		parameter = parameter + "\r\n";
 		parameter = parameter + "minPathLength:" + minPathLength;
 		parameter = parameter + "\r\n";
@@ -310,6 +319,7 @@ public class Process1 {
 		this.metabolitesNum2Kegg = new HashMap();
 		this.reactions = new HashMap();
 		this.reactionsNum2Kegg = new HashMap();
+		this.kegg2CompName = new HashMap<String, String>();
 		// arcs-(id,id) Dijr-(id,id,id)
 		this.arcs = new ArrayList();
 		this.Dijr = new ArrayList();
@@ -324,6 +334,7 @@ public class Process1 {
 		this.solutions = new HashMap<ArrayList<String>, ArrayList<String>>();
 		this.reactionMap = new HashMap<String, String>();
 		this.reactionALL = new ArrayList<String>();
+		this.rpairData = new ArrayList<String>();;
 	}
 
 	public void finish() {
@@ -372,13 +383,13 @@ public class Process1 {
 			return;
 		}
 		int statNum = c.getEdgeNum();
-		if (this.minAtomTransfRate != 0.0D) {
-			this.minAtomGroupTransfer = (int) Math.round(statNum * this.minAtomTransfRate);
-			if (this.minAtomGroupTransfer < 3) {
-				this.minAtomGroupTransfer = 3;
-			}
-		}
-		if (this.minAtomGroupTransfer > statNum) {
+//		if (this.nonConservedMinimalAtomGroups != 0.0D) {
+//			this.nonConservedMinimalAtomGroups = (int) Math.round(statNum * this.minAtomTransfRate);
+//			if (this.nonConservedMinimalAtomGroups < 3) {
+//				this.nonConservedMinimalAtomGroups = 3;
+//			}
+//		}
+		if (this.nonConservedMinimalAtomGroups > statNum) {
 			System.out
 					.println("you can't choose the minAtomGroupTransfer greater than the EndCompound's edge lenghth!");
 			return;
@@ -427,12 +438,12 @@ public class Process1 {
 			return;
 		}
 		int statNum = c.getEdgeNum();
-		if (this.minAtomTransfRate != 0.0D) {
-			this.minAtomGroupTransfer = (int) Math.round(statNum * this.minAtomTransfRate);
-			if (this.minAtomGroupTransfer < 3)
-				this.minAtomGroupTransfer = 3;
-		}
-		if (this.minAtomGroupTransfer > statNum) {
+//		if (this.minAtomTransfRate != 0.0D) {
+//			this.nonConservedMinimalAtomGroups = (int) Math.round(statNum * this.minAtomTransfRate);
+//			if (this.nonConservedMinimalAtomGroups < 3)
+//				this.nonConservedMinimalAtomGroups = 3;
+//		}
+		if (this.nonConservedMinimalAtomGroups > statNum) {
 			System.out.println(
 					"you can't choose the minAtomGroupTransfer greater than the StartCompound's edge lenghth!");
 			return;
@@ -508,10 +519,15 @@ public class Process1 {
 		this.compMap = this.fileUtils.getCompoundName();
 		this.reactionMap = this.fileUtils.getReactionMap();
 		this.reactionALL = this.fileUtils.getReactionAllList();
+		this.rpairData = this.fileUtils.getRpairData();
+		this.kegg2CompName = this.fileUtils.getCompoundName();
+//		for (String string : this.reactionALL) {
+//			System.out.println("quanbufangying :" + string);
+//		}
 		
 		HashMap<String, String> temp = this.fileUtils.getAtomGroupInfo();
 		for (String string : temp.keySet()) {
-			if (Integer.parseInt(temp.get(string).split(" ")[4]) >= this.minAtomGroupTransfer) {
+			if (Integer.parseInt(temp.get(string).split(" ")[4]) >= 1) {//this.minAtomGroupTransfer
 				this.atomGroupTransferNum.put(string, temp.get(string).split(" ")[4]);
 //				System.out.println(string + "::" + temp.get(string).split(" ")[4]);
 //				System.out.println(string +"::" + temp.get(string));
@@ -532,12 +548,32 @@ public class Process1 {
 
 		int mID = 0;
 		int rID = 0;
-		
+		ArrayList<String> atomgroupArrayList = new ArrayList<String>();
+//		String t1 = "  Input Metabolite";
+//		String t2 = "   Index" + "\t" + " Name" + "\t" + "Type of Metabolite";
+//		atomgroupArrayList.add(t1);
+//		atomgroupArrayList.add(t2);
 		for (String metaRe : this.atomGroupTransferNum.keySet()) {
 			String c_1 = metaRe.split(",")[0];
 			String c_2 = metaRe.split(",")[1];
+//			String r = metaRe.split(",")[2];
+			
 			String r = reactionUpdate(c_1, c_2, metaRe.split(",")[2]);
-			if (r == null) continue;
+			if (r.contains("-") && !this.reactionALL.contains(r)) {
+//				System.out.println(r);
+				continue;
+			}
+//			if (r.contains("-") && !this.reactionALL.contains(r)) continue;
+//			if (!this.rpairData.contains(c_1 + "_" + c_2)) {
+//				if (this.reactionALL.contains("-"+r)) {
+//					c_1 = metaRe.split(",")[1];
+//					c_2 = metaRe.split(",")[0];
+//					r="-"+r;
+//				} else {
+//					continue;
+//				}
+//			}
+			
 			if (!this.metabolites.containsKey(c_1)) {
 				this.metabolites.put(c_1, String.valueOf(mID));
 				this.metabolitesNum2Kegg.put(String.valueOf(mID), c_1);
@@ -553,20 +589,202 @@ public class Process1 {
 				this.reactionsNum2Kegg.put(String.valueOf(rID), r);
 				rID++;
 			}
-
-//			String arcString = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2);
-//			if (!this.arcs.contains(arcString) && !arcString.contains("null") && !c_1.equals(c_2)) {
-//				this.arcs.add(arcString);
-//			}
+			
 			String arcString = c_1 + "," + c_2;
 			if (!this.arcs.contains(arcString) && !arcString.contains("null") && !c_1.equals(c_2)) {
 				this.arcs.add(arcString);
 			}
-
+			
 			String dijrNum = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2) + "," + this.reactions.get(r);
+			if (!this.Dijr.contains(dijrNum)) this.Dijr.add(dijrNum);
+//			if(!r.contains("-")) {
+//				String teString = " ";
+//				if (this.metabolites.get(c_1).length() == 1) {
+//					teString += (this.metabolites.get(c_1) + "   ");
+//				} else if (this.metabolites.get(c_1).length() == 2) {
+//					teString += (this.metabolites.get(c_1) + "  ");
+//				} else if (this.metabolites.get(c_1).length() == 3) {
+//					teString += (this.metabolites.get(c_1) + " ");
+//				} else if (this.metabolites.get(c_1).length() == 4) {
+//					teString += (this.metabolites.get(c_1));
+//				}
+//				teString += ("   " + c_1 + "        ");
+//				
+//				if (this.metabolites.get(c_2).length() == 1) {
+//					teString += (this.metabolites.get(c_2) + "   ");
+//				} else if (this.metabolites.get(c_2).length() == 2) {
+//					teString += (this.metabolites.get(c_2) + "  ");
+//				} else if (this.metabolites.get(c_2).length() == 3) {
+//					teString += (this.metabolites.get(c_2) + " ");
+//				} else if (this.metabolites.get(c_2).length() == 4) {
+//					teString += (this.metabolites.get(c_2));
+//				}
+//				teString += ("     " + c_2 + "      ");
+//				
+//				if (this.reactions.get(r).length() == 1) {
+//					teString += (this.reactions.get(r) + "   ");
+//				} else if (this.reactions.get(r).length() == 2) {
+//					teString += (this.reactions.get(r) + "  ");
+//				} else if (this.reactions.get(r).length() == 3) {
+//					teString += (this.reactions.get(r) + " ");
+//				} else if (this.reactions.get(r).length() == 4) {
+//					teString += (this.reactions.get(r));
+//				}
+//				
+//				teString += ("     "+r + "        " + this.atomGroupTransferNum.get(metaRe));
+//				
+//				atomgroupArrayList.add(teString);
+//			}
+//			String teString = "";
+			
+			
+//			if (this.startMetabolitesList.contains(c_1)) {
+//				if (this.metabolites.get(c_1).length() == 1) {
+//					teString += (this.metabolites.get(c_1) + "   ");
+//				} else if (this.metabolites.get(c_1).length() == 2) {
+//					teString += (this.metabolites.get(c_1) + "  ");
+//				} else if (this.metabolites.get(c_1).length() == 3) {
+//					teString += (this.metabolites.get(c_1) + " ");
+//				} else if (this.metabolites.get(c_1).length() == 4) {
+//					teString += (this.metabolites.get(c_1));
+//				}
+//				teString += ("\t" + c_1);
+//			} 
+//			else if (this.cofactorsList.contains(c_1) || this.excludedMetabolitesList.contains(c_1)){
+//				if (this.metabolites.get(c_1).length() == 1) {
+//					teString += (this.metabolites.get(c_1) + "   ");
+//				} else if (this.metabolites.get(c_1).length() == 2) {
+//					teString += (this.metabolites.get(c_1) + "  ");
+//				} else if (this.metabolites.get(c_1).length() == 3) {
+//					teString += (this.metabolites.get(c_1) + " ");
+//				} else if (this.metabolites.get(c_1).length() == 4) {
+//					teString += (this.metabolites.get(c_1));
+//				}
+//				teString += ("\t" + c_1);
+//			} 
+//			else {
+//				if (this.metabolites.get(c_1).length() == 1) {
+//					teString += (this.metabolites.get(c_1) + "   ");
+//				} else if (this.metabolites.get(c_1).length() == 2) {
+//					teString += (this.metabolites.get(c_1) + "  ");
+//				} else if (this.metabolites.get(c_1).length() == 3) {
+//					teString += (this.metabolites.get(c_1) + " ");
+//				} else if (this.metabolites.get(c_1).length() == 4) {
+//					teString += (this.metabolites.get(c_1));
+//				}
+//				teString += ("\t" + c_1);
+//			}
+			
+//			String teString1 = "";
+//			if (this.startMetabolitesList.contains(c_2)) {
+//				if (this.metabolites.get(c_2).length() == 1) {
+//					teString1 += (this.metabolites.get(c_2) + "   ");
+//				} else if (this.metabolites.get(c_2).length() == 2) {
+//					teString1 += (this.metabolites.get(c_2) + "  ");
+//				} else if (this.metabolites.get(c_2).length() == 3) {
+//					teString1 += (this.metabolites.get(c_2) + " ");
+//				} else if (this.metabolites.get(c_2).length() == 4) {
+//					teString1 += (this.metabolites.get(c_2));
+//				}
+//				teString1 += ("\t" + c_2);
+//			} 
+//			else if (this.cofactorsList.contains(c_2) || this.excludedMetabolitesList.contains(c_2)){
+//				if (this.metabolites.get(c_2).length() == 1) {
+//					teString1 += (this.metabolites.get(c_2) + "   ");
+//				} else if (this.metabolites.get(c_2).length() == 2) {
+//					teString1 += (this.metabolites.get(c_2) + "  ");
+//				} else if (this.metabolites.get(c_2).length() == 3) {
+//					teString1 += (this.metabolites.get(c_2) + " ");
+//				} else if (this.metabolites.get(c_2).length() == 4) {
+//					teString1 += (this.metabolites.get(c_2));
+//				}
+//				teString1 += ("\t" + c_2);
+//			} 
+//			else {
+//				if (this.metabolites.get(c_2).length() == 1) {
+//					teString1 += (this.metabolites.get(c_2) + "   ");
+//				} else if (this.metabolites.get(c_2).length() == 2) {
+//					teString1 += (this.metabolites.get(c_2) + "  ");
+//				} else if (this.metabolites.get(c_2).length() == 3) {
+//					teString1 += (this.metabolites.get(c_2) + " ");
+//				} else if (this.metabolites.get(c_2).length() == 4) {
+//					teString1 += (this.metabolites.get(c_2));
+//				}
+//				teString1 += ("\t" + c_2);
+//			}
+//			if (this.reactions.get(r).length() == 1) {
+//				teString += (this.reactions.get(r) + "   ");
+//			} else if (this.reactions.get(r).length() == 2) {
+//				teString += (this.reactions.get(r) + "  ");
+//			} else if (this.reactions.get(r).length() == 3) {
+//				teString += (this.reactions.get(r) + " ");
+//			} else if (this.reactions.get(r).length() == 4) {
+//				teString += (this.reactions.get(r));
+//			}
+//			teString += ("\t" + r);
+//			teString += ("\t" + this.kegg2CompName.get(c_1));
+//			teString1 += ("\t" + this.kegg2CompName.get(c_2));
+			
+//			if (this.metabolites.get(c_1).length() == 1) {
+//				teString += (this.metabolites.get(c_1) + "   ");
+//			} else if (this.metabolites.get(c_1).length() == 2) {
+//				teString += (this.metabolites.get(c_1) + "  ");
+//			} else if (this.metabolites.get(c_1).length() == 3) {
+//				teString += (this.metabolites.get(c_1) + " ");
+//			} else if (this.metabolites.get(c_1).length() == 4) {
+//				teString += (this.metabolites.get(c_1));
+//			}
+//			teString += "\t";
+//			if (this.metabolites.get(c_2).length() == 1) {
+//				teString += (this.metabolites.get(c_2) + "   ");
+//			} else if (this.metabolites.get(c_2).length() == 2) {
+//				teString += (this.metabolites.get(c_2) + "  ");
+//			} else if (this.metabolites.get(c_2).length() == 3) {
+//				teString += (this.metabolites.get(c_2) + " ");
+//			} else if (this.metabolites.get(c_2).length() == 4) {
+//				teString += (this.metabolites.get(c_2));
+//			}
+//			
+//			if (!atomgroupArrayList.contains(teString)) {
+//				atomgroupArrayList.add(teString);
+//			}
+//			if (!atomgroupArrayList.contains(teString1)) {
+//				atomgroupArrayList.add(teString1);
+//			}
+			
+//			String dijrNum = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2) + "," + this.reactions.get(r);
 //			String dijr_1Num = this.metabolites.get(c_2) + "," + this.metabolites.get(c_1) + ","
 //					+ this.reactions.get(r);
-			if (!this.Dijr.contains(dijrNum)) this.Dijr.add(dijrNum);
+//			if (!this.Dijr.contains(dijrNum)) {
+//				if (this.Dijr.contains(dijr_1Num)) {
+//					String reverse = "-" + r;
+////					if (!this.reactionALL.contains(reverse)) continue;
+//					if (!this.reactions.containsKey(reverse)) {
+//						this.reactions.put(reverse, String.valueOf(rID));
+//						this.reactionsNum2Kegg.put(String.valueOf(rID), reverse);
+//						rID++;
+//					}
+//					String dijr2Num = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2) + ","
+//							+ this.reactions.get(reverse);
+//					this.Dijr.add(dijr2Num);
+//				} else {
+//					this.Dijr.add(dijrNum);
+//				}
+//			}
+			
+//			String arcString = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2);
+//			if (!this.arcs.contains(arcString) && !arcString.contains("null") && !c_1.equals(c_2)) {
+//				this.arcs.add(arcString);
+//			}
+//			String arcString = c_1 + "," + c_2;
+//			if (!this.arcs.contains(arcString) && !arcString.contains("null") && !c_1.equals(c_2)) {
+//				this.arcs.add(arcString);
+//			}
+//
+//			String dijrNum = this.metabolites.get(c_1) + "," + this.metabolites.get(c_2) + "," + this.reactions.get(r);
+//			String dijr_1Num = this.metabolites.get(c_2) + "," + this.metabolites.get(c_1) + ","
+//					+ this.reactions.get(r);
+//			if (!this.Dijr.contains(dijrNum)) this.Dijr.add(dijrNum);
 //			if (!this.Dijr.contains(dijrNum)) {
 //				if (this.Dijr.contains(dijr_1Num)) {
 //					String reverse = "-" + r;
@@ -598,10 +816,9 @@ public class Process1 {
 				String t_dijrNum = this.metabolites.get(c_2) + "," + this.metabolites.get(c_1) + "," + this.reactions.get(temp_r);
 				if (!this.Dijr.contains(t_dijrNum)) this.Dijr.add(t_dijrNum);
 			}
-			
-			
-			
 		}
+//		saveAtomGroupTxt(this.saveTxtPath, atomgroupArrayList);
+//		System.out.println("+++++++++++++");
 		int reactionsCount = 0;
 		int reactionsReverseCount = 0;
 		for (String string : this.reactions.keySet()) {
@@ -611,15 +828,33 @@ public class Process1 {
 				reactionsCount++;
 			}
 		}
+		int InternalCount = 0;
+		int StartCount = 0;
+		for (String string : this.metabolites.keySet()) {
+			if (this.startMetabolitesList.contains(string)) {
+				StartCount++;
+			}
+			
+			if (this.startMetabolitesList.contains(string) || this.excludedMetabolitesList.contains(string) || this.cofactorsList.contains(string)) {
+				InternalCount++;
+			}
+		}
+		int BasisCount = 0;
+		for (String string : this.basisMetabolitesList) {
+			if (this.startMetabolitesList.contains(string)) {
+				BasisCount++;
+			}
+		}
 		
-//		System.out.println("mSize:" + this.metabolites.size() + " rSize:" + this.reactions.size() + " reactionsCount:" + reactionsCount + " reactionsReverseCount:" + reactionsReverseCount +
-//				" arcSize:" + this.arcs.size() + " dijrSize:" + this.Dijr.size() + " atomgroupSize:" + this.atomGroupTransferNum.size());
+		System.out.println("mSize:" + this.metabolites.size() + " rSize:" + this.reactions.size() + " reactionsCount:" + reactionsCount + " reactionsReverseCount:" + reactionsReverseCount +
+				" arcSize:" + this.arcs.size() + " dijrSize:" + this.Dijr.size() + " atomgroupSize:" + this.atomGroupTransferNum.size()
+				 + " InternalCount:" + InternalCount + " StartCount:" + StartCount + " BasisCount:" + BasisCount);
 
 	}
 	
 	public String reactionUpdate(String m1, String m2, String r) {
 		String reaction = "";
-		if (this.reactionMap.get(r) == null) return null;
+		if (this.reactionMap.get(r) == null) return r;
 		String equationLeft = this.reactionMap.get(r).split("<=>")[0];
 		String equationRight = this.reactionMap.get(r).split("<=>")[1];
 		if (equationLeft.contains(m1) && equationRight.contains(m2)) {
@@ -651,6 +886,7 @@ public class Process1 {
 			GRBModel model = new GRBModel(env);
 
 			// Create variables
+			int countCompound = 0;
 			GRBVar[][] u = new GRBVar[metaIDMax][metaIDMax];
 			for (String arc : arcs) {
 				String t1 = arc.split(",")[0];
@@ -665,8 +901,10 @@ public class Process1 {
 				String uName = metabolites.get(t1) + "," + metabolites.get(t2);
 				if (startEdge != endEdge) {
 					u[startEdge][endEdge] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, uName);
+					countCompound++;
 				}
 			}
+			System.out.println("countCompound::" + countCompound);
 			model.update();
 			// Set objective
 			GRBLinExpr obj_u = new GRBLinExpr();
@@ -819,13 +1057,15 @@ public class Process1 {
 			GRBVar[] v = new GRBVar[reacIDMax];
 			GRBVar[] z = new GRBVar[reacIDMax];
 			
-			
+			int countReaction = 0;
 			if (this.ifSpecies) {
 				ArrayList<String> speciesReaction = new ArrayList<String>();
 				speciesReaction = this.fileUtils.getSpeciesReactionList();
 				for (String rid : reactions.keySet()) {
-//						System.out.println(rid + "------------");
 					if (rid.contains("-")) {
+						if (!this.reactionALL.contains(rid)) {
+							continue;
+						}
 						String tempRid = rid.substring(1);
 						if (!speciesReaction.contains(tempRid)) {
 							continue;
@@ -836,6 +1076,7 @@ public class Process1 {
 						}
 					}
 //						System.out.println(rid + "++++++++++++");
+					countReaction++;
 					int id = Integer.parseInt(reactions.get(rid));
 					v[id] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, rid);
 					z[id] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, rid);
@@ -848,6 +1089,7 @@ public class Process1 {
 				}
 			}
 			
+			System.out.println("countReaction:::" + countReaction);
 			GRBLinExpr obj_z = new GRBLinExpr();
 			for (GRBVar grbVar : z) {
 				if (grbVar != null) {
@@ -1008,7 +1250,7 @@ public class Process1 {
 			model.set(GRB.IntParam.PoolSearchMode, 2);
 
 			// save problem
-//			model.write("MPFinder3.lp");
+			model.write("MPFinder3.lp");
 
 			// Open log file
 //			logfile = new FileWriter("MPFinder.log");
@@ -1125,13 +1367,12 @@ public class Process1 {
 				
 			}
 			
+			
 //			savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions, "NO");
 			
 			for (int j = 0; j < this.linkArcsSolutions.size(); j++) {
 				ArrayList<String> tempMe = this.linkArcsSolutions.get(j);
 				ArrayList<String> tempRe = this.linkReactiosSolutions.get(j);
-				int nonConservedAtomGroup = 2;
-				if (this.minAtomGroupTransfer == 0) this.minAtomGroupTransfer = nonConservedAtomGroup;
 				for (int i = 0; i < tempMe.size()-1; i++) {
 					String s = "";
 					if (tempRe.get(i).contains("-")) {
@@ -1140,7 +1381,7 @@ public class Process1 {
 						s = tempMe.get(i) + "," + tempMe.get(i+1) + "," + tempRe.get(i);
 					}
 					if ( !this.atomGroupTransferNum.containsKey(s) || this.atomGroupTransferNum.get(s) == null  || 
-							Integer.valueOf(this.atomGroupTransferNum.get(s)) < this.minAtomGroupTransfer) {
+							Integer.valueOf(this.atomGroupTransferNum.get(s)) < 2) {//this.nonConservedMinimalAtomGroups
 						this.linkArcsSolutions.remove(j);
 						this.linkReactiosSolutions.remove(j);
 						break;
@@ -1149,33 +1390,83 @@ public class Process1 {
 			}
 //			saveKeepPathwayTxt(this.saveTxtPath, this.linkArcsSolutions, "track-inR");
 			if (this.saveNonConserved) {
-				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions);
+				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions, "InR");
+				if (this.ifDraw) {
+					ArrayList<String> paths = new ArrayList<String>();
+					for (int j = 0; j < this.linkArcsSolutions.size(); j++) {
+						ArrayList<String> tempMe = this.linkArcsSolutions.get(j);
+						ArrayList<String> tempRe = this.linkReactiosSolutions.get(j);
+						String s = tempMe.get(0) + "-->";
+						for (int i = 0; i < tempMe.size()-1; i++) {
+							if (tempRe.get(i).contains("-")) {
+								s += (tempRe.get(i).substring(1) + "-->" + tempMe.get(i + 1) + "-->");
+							} else {
+								s += (tempRe.get(i) + "-->" + tempMe.get(i + 1) + "-->");
+							}
+						}
+//						System.out.println(s.substring(0, s.length()-3));
+						paths.add(s.substring(0, s.length()-3));
+					}
+					String picName = "";
+					if (this.ifStart) {
+						picName = this.start + "_" + this.end + "_" + "graphInR";
+					} else {
+						picName = this.end + "_" + "graphInR";
+					}
+					savePathwayAsPic(this.saveTxtPath, this.graPhVizPath, paths, this.drawNpathways, picName);
+				}
 			}
 	
-			if (this.keepAtomgroupTransfer) {
-				int temp_minAtomGroupTransfer = 2;
-				if (this.minAtomGroupTransfer != 0) temp_minAtomGroupTransfer = this.minAtomGroupTransfer;
+			
+				
+				
+//				saveKeepPathwayTxt(this.saveTxtPath, this.linkArcsSolutions, "track-inLP");
+			if (this.saveConserved) {
 				for (int i = 0; i < this.linkArcsSolutions.size(); i++) {
-//					System.out.println(this.linkArcsSolutions.get(i));
-//					System.out.println(this.linkReactiosSolutions.get(i));
-					int keepAtomTran = this.fileUtils.keepAtomGroup(this.linkArcsSolutions.get(i), this.linkReactiosSolutions.get(i), temp_minAtomGroupTransfer);
-//					System.out.println("keepAtomTran:::::::::"+keepAtomTran);
-//					System.out.println();
-					if (keepAtomTran == 0 || keepAtomTran == 1) {
+//						System.out.println(this.linkArcsSolutions.get(i));
+//						System.out.println(this.linkReactiosSolutions.get(i));
+					int keepAtomTran = this.fileUtils.keepAtomGroup(this.linkArcsSolutions.get(i), this.linkReactiosSolutions.get(i), 2);//this.conservedMinimalAtomGroups
+//						System.out.println("keepAtomTran:::::::::"+keepAtomTran);
+//						System.out.println();
+					if (keepAtomTran == 0 || keepAtomTran == 1 || keepAtomTran < this.conservedMinimalAtomGroups) {
 						this.linkArcsSolutions.remove(i);
 						this.linkReactiosSolutions.remove(i);
-//						System.out.println("arcs::" + this.linkArcsSolutions.get(i));
-//						System.out.println("reactions::" + this.linkReactiosSolutions.get(i));
-//						System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-//						count2++;
+						i=i-1;
+//							System.out.println("arcs::" + this.linkArcsSolutions.get(i));
+//							System.out.println("reactions::" + this.linkReactiosSolutions.get(i));
+//							System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//							count2++;
 					}
 				}
-//				saveKeepPathwayTxt(this.saveTxtPath, this.linkArcsSolutions, "track-inLP");
-				if (this.saveConserved) {
-					savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions);
+				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions, "InLP");
+				
+				if (this.ifDraw) {
+					ArrayList<String> paths = new ArrayList<String>();
+					for (int j = 0; j < this.linkArcsSolutions.size(); j++) {
+						ArrayList<String> tempMe = this.linkArcsSolutions.get(j);
+						ArrayList<String> tempRe = this.linkReactiosSolutions.get(j);
+						String s = tempMe.get(0) + "-->";
+						for (int i = 0; i < tempMe.size()-1; i++) {
+							if (tempRe.get(i).contains("-")) {
+								s += (tempRe.get(i).substring(1) + "-->" + tempMe.get(i + 1) + "-->");
+							} else {
+								s += (tempRe.get(i) + "-->" + tempMe.get(i + 1) + "-->");
+							}
+						}
+//						System.out.println(s.substring(0, s.length()-3));
+						paths.add(s.substring(0, s.length()-3));
+					}
+					String picName = "";
+					if (this.ifStart) {
+						picName = this.start + "_" + this.end + "_" + "graphInLP";
+					} else {
+						picName = this.end + "_" + "graphInLP";
+					}
+					savePathwayAsPic(this.saveTxtPath, this.graPhVizPath, paths, this.drawNpathways, picName);
 				}
 			}
 			
+				
 			
 			
 			// Dispose of model and environment
@@ -1396,4 +1687,155 @@ public class Process1 {
 			e.printStackTrace();
 		}
 	}
+	
+	public void saveAtomGroupTxt(String filePath, ArrayList<String> listMetabolite) {
+		File file = new File(filePath);
+		filePath = String.valueOf(filePath) + "atomgroup" + ".txt";
+		try {
+			if (!file.exists() && !file.isDirectory()) {
+				file.mkdir();
+			}
+			FileWriter fwriter = new FileWriter(filePath, true);
+			for (int j = 0; j < listMetabolite.size(); j++) {
+				String s = listMetabolite.get(j) + "\n";
+				fwriter.write(s);
+			}
+			fwriter.flush();
+			fwriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void savePathwayAsPic(ArrayList<String> paths, String picName) {
+		GraphViz gViz = new GraphViz("D:\\graphvizPhoto\\", "D:\\graphviz\\bin\\dot.exe");
+//		paths.add("C00092-->R00835-->C01236-->R02035-->C00345-->R01528-->C00199-->R01529-->C00231-->R01830-->C05345");
+		
+		gViz.setParameter(picName);
+		gViz.setDotCodeFile(picName);
+		gViz.start_graph();
+		ArrayList<String> gVizList = new ArrayList<String>();
+		for (String path : paths) {
+			String[] nodes = path.split("-->");
+			for (int i = 0; i < nodes.length-2; i++) {
+				String temp = nodes[i];
+				String gVizString = "";
+				if (i % 2 == 0) {//temp.contains("C")
+					if (nodes[i+1].contains("-")) {
+						gVizString = "\"" + nodes[i] + "\"" + "->" + "\"" + nodes[i+2] + "\"" + "[label=\"" + nodes[i+1].substring(1) +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}else {
+						gVizString = "\"" + nodes[i] + "\"" + "->" + "\"" + nodes[i+2] + "\"" + "[label=\"" + nodes[i+1] +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}
+					
+				}else {
+					continue;
+				}
+				
+			}
+		}
+		gViz.end_graph();
+		try {
+			gViz.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void savePathwayAsPic(HashMap<String, String> keggname) {
+		ArrayList<String> paths = new ArrayList<String>();
+		String picName = "pathway";
+		GraphViz gViz = new GraphViz("D:\\graphvizPhoto\\", "D:\\graphviz\\bin\\dot.exe");
+		
+		gViz.setParameter(picName);
+		gViz.setDotCodeFile(picName);
+		gViz.start_graph();
+		ArrayList<String> gVizList = new ArrayList<String>();
+		for (String path : paths) {
+			String[] nodes = path.split("-->");
+			for (int i = 0; i < nodes.length-2; i++) {
+				String temp = nodes[i];
+				String gVizString = "";
+				if (temp.contains("C")) {//temp.contains("C")
+					if (nodes[i+1].contains("-")) {
+						gVizString = "\"" + nodes[i] + "\"" + "->" + "\"" + nodes[i+2] + "\"" + "[label=\"" + nodes[i+1].substring(1) +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}else {
+						gVizString = "\"" +  nodes[i] + "\""  + "->" + "\"" + nodes[i+2] + "\""  + "[label=\"" + nodes[i+1] +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}
+					
+				}else {
+					continue;
+				}
+				
+			}
+		}
+		gViz.end_graph();
+		try {
+			gViz.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void savePathwayAsPic(String filePath, String graphVizPath,ArrayList<String> paths, int num, String picName) {
+		GraphViz gViz = new GraphViz(filePath, graphVizPath);//"D:\\graphvizPhoto\\", "D:\\graphviz\\bin\\dot.exe"
+//		paths.add("C00092-->R00835-->C01236-->R02035-->C00345-->R01528-->C00199-->R01529-->C00231-->R01830-->C05345");
+		
+		gViz.setParameter(picName);
+		gViz.setDotCodeFile(picName);
+		gViz.start_graph();
+		ArrayList<String> gVizList = new ArrayList<String>();
+		if (num > paths.size()) {
+			num = paths.size();
+		}
+		for (int j = 0; j < num; j++) {
+			String[] nodes = paths.get(j).split("-->");
+			for (int i = 0; i < nodes.length-2; i++) {
+				String temp = nodes[i];
+				String gVizString = "";
+				if (i % 2 == 0) {//temp.contains("C")
+					if (nodes[i+1].contains("-")) {
+						gVizString = "\"" + this.kegg2CompName.get(nodes[i]) + "\"" + "->" + "\"" + this.kegg2CompName.get(nodes[i+2]) + "\"" + "[label=\"" + nodes[i+1].substring(1) +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}else {
+						gVizString = "\"" + this.kegg2CompName.get(nodes[i]) + "\"" + "->" + "\"" + this.kegg2CompName.get(nodes[i+2]) + "\"" + "[label=\"" + nodes[i+1] +"\"]";
+						if (!gVizList.contains(gVizString)) {
+							gViz.addln(gVizString);
+							gVizList.add(gVizString);
+						}
+					}
+					
+				}else {
+					continue;
+				}
+				
+			}
+		}
+		gViz.end_graph();
+		try {
+			gViz.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
 }
