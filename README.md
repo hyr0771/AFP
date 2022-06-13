@@ -14,10 +14,11 @@ The program of AFP model is packaged as a JAR bundle called **AFP.jar**. The use
 
 ```java -jar (the directory of AFP.jar) (the directory of configure file) ```
 
-For example: 
+For example:  
+
 ```java -jar D:\\AFP.jar D:\\config.txt ```
 
-The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file.
+The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file.  
 **Note that:**
 1. **Remainder:** Please install GUROBI before running our program AFP!
 2. AFP.jar **should be** in the same directory as the folder “lib”. 
