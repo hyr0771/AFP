@@ -1,57 +1,43 @@
 # AFP
-**AFP**(**A**tom-group **F**lux **P**athfinder) is a method to find metabolic pathways through atom group tracking. AFP incorporates the movements of atom group into the reaction stoichiometry to construct MILP model to search the pathways containing atom groups exchange in the reactions and adapts the stoichiometric MILP model to provide the options of searching pathways from an arbitrary or given compound to a target compound. For a given target compound, our pathfinding method AFP identifies the metabolic pathways that convert the user-defined or arbitrary source compound to the target compound through three main steps: **First**, We use the reactions that transfer atom groups between substrates and products to construct atom group transfer network. **Then**, we combine the reaction stoichiometry with the atom group exchanged within reactions to construct a MILP model based on the atom group transfer network. **Finally**, we solve the objective function of the constructed MILP model to find the linear pathways that start from the user-defined or arbitrary compound to the target compounds by tracking the motion of atom groups in the built atom group transfer network. 
+**AFP**(**A**tomgroup **F**lux **P**athfinding) is a method to find metabolic pathways via atom group tracking.AFP incorporates the movements of atom group into the reaction stoichiometry to construct MILP model to search the pathways containing atom group exchange in the reactions and adapts the stoichiometric MILP model to provide the options of searching pathways from an arbitrary or given compound to a target compound. For a given target compound, our method AFP identifies the metabolic pathways that convert the user-defined or arbitrary source compound to the target compound via three main steps: we first use the reactions that transfer atom groups between substrates and products to construct atom group transfer network. Then, we combine the reaction stoichiometry with the atom group exchanged within reactions to construct a MILP model based on the atom group transfer network. Finally, we solve the objective function of the constructed MILP model to find the linear pathways that start from the user-defined or arbitrary compound to the target compounds by tracking the motion of atom groups in the built atom group transfer network.
 
 # Requirements and installation
-1. AFP was written and tested on Java with version "1.8.0_201" and Gurobi Optimizer with version "9.0.3". **Java with version "1.8.0_201"(or higher) and Gurobi Optimizer with version "9.0.3"(or higher)** need to be installed to work with AFP.
+1. AFP was written and tested on Java with version "1.8.0_201" and GUROBI Optimizer with version "9.0.3". **Java with version "1.8.0_201"(or higher) and Gurobi Optimizer with version "9.0.3"(or higher) and GUROBI Optimizer with version "9.0.3"(or higher)** are required to be installed to run with AFP.
 2. AFP constructed a MILP model based on the atom group transfer network and GUROBI is required to solve the MILP model. 
-3. The data required for AFP program to find pathways are prepared in the directory of data
+3. The data for AFP can be found in the data directory.
 
 # Download data and program
-AFP program is packaged as a JAR bundle called AFP.jar. To provide ease of use, user can download **AFP.jar** to run AFP with command line(see detail in <a  href="#1">Usage Example</a>). 
-The data required for running AFP is also packaged in AFP.jar(see detail in <a  href="#2">Data organization</a>). The sample configure file **"config.txt"** is a sample for adjusting the running parameters of AFP(see detail in <a  href="#3">Running parameters</a>).
+The program of AFP model is packaged as a JAR bundle called **AFP.jar**. The user can download **AFP.jar** to run AFP with command line (see <a  href="#1">Usage Example</a> for details). The data for running AFP are also packaged in AFP.jar. The configure file “config.txt” is a sample configure file for AFP (see <a  href="#2">Running parameters</a> for details).
 
 # Usage Example
-<a name="1">User can run AFP by one command line as follows:</a>
+<a name="1">The user can run AFP to find metabolic pathways by the following command line:</a>
 
 ```java -jar (the directory of AFP.jar) (the directory of configure file) ```
 
-**the directory of AFP.jar** is the directory of "AFP.jar".
+For example: 
+```java -jar D:\\AFP.jar D:\\config.txt ```
 
-**the directory of configure file** is the directory of the configure file.
+The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file.
+**Note that:**
+1. **Remainder:** Please install GUROBI before running our program AFP!
+2. AFP.jar **should be** in the same directory as the folder “lib”. 
+3. The user **must replace** the gurobi.jar file in the folder “lib” with the user’s own gurobi.jar file. You can find your gurobi.jar file in the setup folder “lib” of Gurobi. For example, in Windows, your gurobi.jar file is usually located at “C:/gurobi/win64/lib/gurobi.jar”, and in Linux, it is usually located at “public/software/apps/gurobi/linux/lib/gurobi.jar”.
 
-For example: ```java -jar D:\\AFP.jar D:\\config.txt ```
-And the Search results are in "resultDirectory" which is specified by user in "config.txt". Note that AFP.jar must be in the same directory as the folder lib and replace the locally installed gurobi.jar with the gurobi.jar in the file Lib.
-
-# Data organization
-
-<a name="2">The directory of data contains the following directories and files:</a>
-
-```
-reaction.txt: the detail information of reaction.
-
-compoundName.txt: the list of KEGG ID and metabolite name.
-
-startMetabolitesList.txt: the list of starting metabolites.
-
-reactions-atomgroupcount.txt: the detail information of the atom group transfer.
-
-mol.rar: contains the prepared files of the compound dataset.
-```
+Here we also provide four sample configure files AFP-S-NT.txt, AFP-S-T.txt, AFP-NS-NT.txt, AFP-NS-T.txt for four searching modes: AFP-S-NT, AFP-S-T, AFP-NS-NT, AFP-NS-T. **AFP-S-NT** searches the pathways containing non-conserved atom group exchange in the reactions from given start to target compounds. **AFP-S-T** searches the pathways transferring conserved atom groups from the given start to target compounds. **AFP-NS-NT** searches the pathways containing non-conserved atom group exchange in the reactions from an arbitrary start compound to given target compound. **AFP-NS-T** searches the pathways transferring conserved atom groups from an arbitrary start compound to given target compound.
 
 # Running parameters
-<a name="3">User can use configure file to adjust the running patameters of AFP, and the following table is the specific contents of "config.txt"</a>
+<a name="2">The user can use configure file to specify the running parameters of AFP and the following table shows the illustration for specifying configure file.</a>
 | Option | Description | Default value |
 | -----  | ------| ----|
-| sourceCompound | Source compound in KEGG format | Optional |
-| targetCompound | Target compound in KEGG format | Required |
-| nonConservedMinimalAtomGroups | Number of the minimal atom groups simply exchanged between the compounds of reactions | 2 |
-| conservedMinimalAtomGroups | Number of the minimal atom groups transferred from the start to target compounds | 2 |
-| solutionNumber | Number of solutions to keep in solution pool | 2000 | 
-| timeLimit | Limits the total time expended (in seconds) | 1000 |
-| graphVizDirectory | The directory of graphViz "dot.exe" file, users should install the graphViz. | D:\graphviz\bin\dot.exe |
-| drawNpathways | N pathways to be shown in the figure | 5 |
-| resultDirectory | The directory of searching results, users can find the running results of the program in this directory. | D:\results\ |
-
+| startCompound | Start compound in KEGG compound ID. You can specify the start compound here in KEGG compound ID such as C00022, then AFP will search the pathways from the given start to target compounds. If the user wants to search the pathways from an arbitrary start compound to given target compound, you can specify the startCompound as: arbitrary. | Optional |
+| targetCompound | Target compound in KEGG compound ID such as C00183. | Required |
+| searchingStrategy | For this parameter, three searching strategies for tracking atom group can be chosen: non-conserved, conserved, default. The non-conserved/default strategy means that AFP searches the pathways containing non-conserved atom group exchange in the reactions. The conserved strategy means that AFP searches the pathways transferring conserved atom groups from the start to target compounds. | default |
+| numberOfTheMinimalAtomGroups | The number of the minimal atom groups transferred in the reactions of the pathway. | 2 |
+| solutionNumber | Number of solutions kept in the solution pool | 2000 | 
+| timeLimit | Time limit for searching pathways (in seconds) | 200 |
+| graphVizDirectory | The directory of graphViz "dot.exe" file. The user can visualize the resulting pathways by graphViz and you need to install the graphViz to get the visualized resulting pathways. You can find the file dot.exe in the setup directory "bin" of your graphViz. The file dot.exe can also be found along with AFP.jar here. | D:\\graphviz\\bin\\dot.exe |
+| drawNpathways | Number of the visualized resulting pathways | 5 |
+| resultDirectory | The directory of searching results, the user can find the resulting pathway files in this directory. The resulting pathways can be visualized by graphViz, and the user can use graphViz to open resulting pathway file to see the visualization of resulting pathways. | D:\\results\\ |
 
 
 
