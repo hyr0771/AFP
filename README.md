@@ -18,7 +18,7 @@ For example:
 
 ```java -jar D:\\AFP.jar D:\\config.txt ```
 
-The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file.  
+The searching results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file.  
 **Note that:**
 1. **Remainder:** Please install GUROBI before running our program AFP!
 2. AFP.jar **should be** in the same directory as the folder “lib”. 
