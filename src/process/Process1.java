@@ -75,9 +75,7 @@ public class Process1 {
 
 	int maxCombination = 10000;
 
-	int nonConservedMinimalAtomGroups = 3;
-
-	int conservedMinimalAtomGroups = 3;
+	int numberOfTheMinimalAtomGroups = 3;
 
 	int minPathLength = 2;
 
@@ -195,8 +193,7 @@ public class Process1 {
 	ArrayList<String> reactionALL = null;
 	ArrayList<String> rpairData = null;
 
-	public void setParameter(String start, String end, int k, int nonConservedMinimalAtomGroups,
-			int conservedMinimalAtomGroups, int minPathLength, int maxPathLength, String saveTxtPath,
+	public void setParameter(String start, String end, int k, int numberOfTheMinimalAtomGroups, int minPathLength, int maxPathLength, String saveTxtPath,
 			String savePicPath, boolean ifDraw, int drawNpathways, boolean ifStart, String graPhVizPath, int timeLimit,
 			boolean ifCycle, boolean ifSpecies, int solutionNumber, boolean saveConserved, boolean saveNonConserved) {
 		this.drawNpathways = drawNpathways;
@@ -209,8 +206,7 @@ public class Process1 {
 		this.start = start;
 		this.end = end;
 		this.k = k;
-		this.nonConservedMinimalAtomGroups = nonConservedMinimalAtomGroups;
-		this.conservedMinimalAtomGroups = conservedMinimalAtomGroups;
+		this.numberOfTheMinimalAtomGroups = numberOfTheMinimalAtomGroups;
 		this.minPathLength = minPathLength;
 		this.maxPathLength = maxPathLength;
 		this.ifPreciseFindBranch = ifPreciseFindBranch;
@@ -240,9 +236,7 @@ public class Process1 {
 		parameter = parameter + "\r\n";
 		parameter = parameter + "k:" + k;
 		parameter = parameter + "\r\n";
-		parameter = parameter + "nonConservedMinimalAtomGroups:" + nonConservedMinimalAtomGroups;
-		parameter = parameter + "\r\n";
-		parameter = parameter + "conservedMinimalAtomGroups:" + conservedMinimalAtomGroups;
+		parameter = parameter + "numberOfTheMinimalAtomGroups:" + numberOfTheMinimalAtomGroups;
 		parameter = parameter + "\r\n";
 		parameter = parameter + "minPathLength:" + minPathLength;
 		parameter = parameter + "\r\n";
@@ -342,7 +336,7 @@ public class Process1 {
 		}
 		int statNum = c.getEdgeNum();
 		
-		if (this.nonConservedMinimalAtomGroups > statNum) {
+		if (this.numberOfTheMinimalAtomGroups > statNum) {
 			System.out
 					.println("you can't choose the minAtomGroupTransfer greater than the EndCompound's edge lenghth!");
 			return;
@@ -378,7 +372,7 @@ public class Process1 {
 //			if (this.nonConservedMinimalAtomGroups < 3)
 //				this.nonConservedMinimalAtomGroups = 3;
 //		}
-		if (this.nonConservedMinimalAtomGroups > statNum) {
+		if (this.numberOfTheMinimalAtomGroups > statNum) {
 			System.out.println(
 					"you can't choose the minAtomGroupTransfer greater than the StartCompound's edge lenghth!");
 			return;
@@ -552,10 +546,10 @@ public class Process1 {
 			}
 		}
 
-		System.out.println("mSize:" + this.metabolites.size() + " rSize:" + this.reactions.size() + " reactionsCount:"
-				+ reactionsCount + " reactionsReverseCount:" + reactionsReverseCount + " arcSize:" + this.arcs.size()
-				+ " dijrSize:" + this.Dijr.size() + " atomgroupSize:" + this.atomGroupTransferNum.size()
-				+ " InternalCount:" + InternalCount + " StartCount:" + StartCount + " BasisCount:" + BasisCount);
+//		System.out.println("mSize:" + this.metabolites.size() + " rSize:" + this.reactions.size() + " reactionsCount:"
+//				+ reactionsCount + " reactionsReverseCount:" + reactionsReverseCount + " arcSize:" + this.arcs.size()
+//				+ " dijrSize:" + this.Dijr.size() + " atomgroupSize:" + this.atomGroupTransferNum.size()
+//				+ " InternalCount:" + InternalCount + " StartCount:" + StartCount + " BasisCount:" + BasisCount);
 
 	}
 
@@ -626,7 +620,7 @@ public class Process1 {
 					countCompound++;
 				}
 			}
-			System.out.println("countCompound::" + countCompound);
+//			System.out.println("countCompound::" + countCompound);
 			model.update();
 			// Set objective
 			GRBLinExpr obj_u = new GRBLinExpr();
@@ -793,7 +787,7 @@ public class Process1 {
 				}
 			}
 
-			System.out.println("countReaction:::" + countReaction);
+//			System.out.println("countReaction:::" + countReaction);
 			GRBLinExpr obj_z = new GRBLinExpr();
 			for (GRBVar grbVar : z) {
 				if (grbVar != null) {
@@ -1029,8 +1023,8 @@ public class Process1 {
 				long endTime = System.currentTimeMillis();
 			}
 
-			savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions,
-					"_NO");
+//			savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions,
+//					"_NO");
 
 			if (this.saveNonConserved) {
 				for (int j = 0; j < this.linkArcsSolutions.size(); j++) {
@@ -1044,16 +1038,16 @@ public class Process1 {
 							s = tempMe.get(i) + "," + tempMe.get(i + 1) + "," + tempRe.get(i);
 						}
 						if (!this.atomGroupTransferNum.containsKey(s) || this.atomGroupTransferNum.get(s) == null
-								|| Integer.valueOf(this.atomGroupTransferNum.get(s)) < 2) {// this.nonConservedMinimalAtomGroups
+								|| Integer.valueOf(this.atomGroupTransferNum.get(s)) < this.numberOfTheMinimalAtomGroups) {
 							this.linkArcsSolutions.remove(j);
 							this.linkReactiosSolutions.remove(j);
+							i = i -1;
 							break;
 						}
 					}
 				}
 
-				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions,
-						"InR");
+				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions);
 				if (this.ifDraw) {
 					ArrayList<String> paths = new ArrayList<String>();
 					for (int j = 0; j < this.linkArcsSolutions.size(); j++) {
@@ -1071,9 +1065,9 @@ public class Process1 {
 					}
 					String picName = "";
 					if (this.ifStart) {
-						picName = this.start + "_" + this.end + "_" + "graphInR";
+						picName = this.start + "_" + this.end;
 					} else {
-						picName = this.end + "_" + "graphInR";
+						picName = this.end;
 					}
 					savePathwayAsPic(this.saveTxtPath, this.graPhVizPath, paths, this.drawNpathways, picName);
 				}
@@ -1083,14 +1077,13 @@ public class Process1 {
 				for (int i = 0; i < this.linkArcsSolutions.size(); i++) {
 					int keepAtomTran = this.fileUtils.keepAtomGroup(this.linkArcsSolutions.get(i),
 							this.linkReactiosSolutions.get(i), 2);
-					if (keepAtomTran == 0 || keepAtomTran == 1 || keepAtomTran < this.conservedMinimalAtomGroups) {
+					if (keepAtomTran == 0 || keepAtomTran == 1 || keepAtomTran < this.numberOfTheMinimalAtomGroups) {
 						this.linkArcsSolutions.remove(i);
 						this.linkReactiosSolutions.remove(i);
 						i = i - 1;
 					}
 				}
-				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions,
-						"InLP");
+				savePathwayMetaboliteReactionTxt(this.saveTxtPath, this.linkArcsSolutions, this.linkReactiosSolutions);
 
 				if (this.ifDraw) {
 					ArrayList<String> paths = new ArrayList<String>();
@@ -1109,9 +1102,9 @@ public class Process1 {
 					}
 					String picName = "";
 					if (this.ifStart) {
-						picName = this.start + "_" + this.end + "_" + "graphInLP";
+						picName = this.start + "_" + this.end;
 					} else {
-						picName = this.end + "_" + "graphInLP";
+						picName = this.end;
 					}
 					savePathwayAsPic(this.saveTxtPath, this.graPhVizPath, paths, this.drawNpathways, picName);
 				}
@@ -1476,7 +1469,7 @@ public class Process1 {
 //		paths.add("C00092-->R00835-->C01236-->R02035-->C00345-->R01528-->C00199-->R01529-->C00231-->R01830-->C05345");
 
 		gViz.setParameter(picName);
-		gViz.setDotCodeFile(picName);
+		gViz.setDotCodeFile("graphcode");
 		gViz.start_graph();
 		ArrayList<String> gVizList = new ArrayList<String>();
 		if (num > paths.size()) {
