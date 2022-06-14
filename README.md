@@ -4,7 +4,7 @@
 # Requirements and installation
 AFP was written and tested on Java with version "1.8.0_201" and GUROBI Optimizer with version "9.0.3". **Java with version "1.8.0_201"(or higher) and GUROBI Optimizer with version "9.0.3"(or higher)** are required to be installed to run with AFP.
 
-# Download data and program
+# Download program and data
 The program of AFP model was packaged as a JAR bundle called AFP.jar. The user can download **AFP.jar** to run AFP with command line (see <a  href="#1">Usage Example</a> for details). The data for running AFP were also packaged in AFP.jar. The configure file “config.txt” is a sample configure file for AFP (see <a  href="#2">Running parameters</a> for details).
 
 # Usage Example
