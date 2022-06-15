@@ -1,0 +1,10 @@
+startCompound       C00022
+targetCompound       C00183
+searchingStrategy conserved
+numberOfTheMinimalAtomGroups 2
+solutionNumber       2000
+timeLimit   200
+resultVisualization   true
+graphVizDirectory D:\\graphviz\\bin\\dot.exe
+drawNpathways 5
+resultDirectory       D:\\results\\
