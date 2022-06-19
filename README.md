@@ -28,8 +28,8 @@ Here we also provide four sample configure files AFP-S-NT.txt, AFP-S-T.txt, AFP-
 <a name="2">The user can use configure file to specify the running parameters of AFP and the following table shows the illustration for specifying configure file.</a>
 | Option | Description | Default value |
 | -----  | ------| ----|
-| startCompound | Start compound in KEGG compound ID. You can specify the start compound here in KEGG compound ID such as C00022, then AFP will search the pathways from the given start to target compounds. If the user wants to search the pathways from an arbitrary start compound to given target compound, you can specify the startCompound as: arbitrary. | Optional |
-| targetCompound | Target compound in KEGG compound ID such as C00183. | Required |
+| startCompound | Start compound in KEGG compound ID. You can specify the start compound here in KEGG compound ID such as **C00022**, then AFP will search the pathways from the given start to target compounds. If the user wants to search the pathways from an arbitrary start compound to given target compound, you can specify the startCompound as: **arbitrary**. | Optional |
+| targetCompound | Target compound in KEGG compound ID such as **C00183**. | Required |
 | searchingStrategy | For this parameter, three searching strategies for tracking atom group can be chosen: **non-conserved**, **conserved**, **default**. The non-conserved/default strategy means that AFP searches the pathways containing non-conserved atom group exchange in the reactions. The conserved strategy means that AFP searches the pathways transferring conserved atom groups from the start to target compounds. | default |
 | numberOfTheMinimalAtomGroups | The number of the minimal atom groups transferred in the reactions of the pathway. | 2 |
 | solutionNumber | Number of solutions kept in the solution pool | 2000 | 
