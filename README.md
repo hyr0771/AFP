@@ -8,8 +8,8 @@ AFP was written and tested on Java with version "1.8.0_201" and GUROBI Optimizer
 The program of AFP model was packaged as a JAR bundle called AFP.jar. The user can download **AFP.jar** to run AFP with command line (see <a  href="#1">Usage Example</a> for details). The data for running AFP were also packaged in AFP.jar. The configure file “config.txt” is a sample configure file for AFP (see <a  href="#2">Running parameters</a> for details).
 
 # Usage Example
-1. Please install GUROBI before running our program AFP!!!
-2. AFP.jar requires the files “gurobi.jar” and “ujmp-complete-0.2.5.jar” in the folder “lib” of the directory of AFP on Github. The user should download the directory of AFP (including the folder “lib” and AFP.jar) on Github to run AFP.jar. On the GitHub page of AFP, you can click the button “code”-> ”Download ZIP” to download the directory of AFP.
+1. Please install GUROBI before running our program AFP**!!!**
+2. AFP.jar **requires** the files “gurobi.jar” and “ujmp-complete-0.2.5.jar” in the folder “lib” of the directory of AFP on Github. The user **should download** the directory of AFP (including the folder “lib” and AFP.jar) on Github to run AFP.jar. On the GitHub page of AFP, you can click the button “code”-> ”Download ZIP” to download the directory of AFP.
 3. After downloading the directory of AFP on Github (AFP.jar should be in the same directory as the folder “lib”.), the user can run AFP to find metabolic pathways by the following command line:
 
 java -jar (the directory of AFP.jar) (the directory of configure file)
