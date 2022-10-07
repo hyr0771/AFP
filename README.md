@@ -8,21 +8,15 @@ AFP was written and tested on Java with version "1.8.0_201" and GUROBI Optimizer
 The program of AFP model was packaged as a JAR bundle called AFP.jar. The user can download **AFP.jar** to run AFP with command line (see <a  href="#1">Usage Example</a> for details). The data for running AFP were also packaged in AFP.jar. The configure file “config.txt” is a sample configure file for AFP (see <a  href="#2">Running parameters</a> for details).
 
 # Usage Example
-<a name="1">
-1、Please install GUROBI before running our program AFP!!!
-2、AFP.jar requires the files “gurobi.jar” and “ujmp-complete-0.2.5.jar” in the folder “lib” of the directory of AFP on Github. The user should download the directory of AFP (including the folder “lib” and AFP.jar) on Github to run AFP.jar. On the GitHub page of AFP, you can click the button “code”-> ”Download ZIP” to download the directory of AFP.
-3、After downloading the directory of AFP on Github (AFP.jar should be in the same directory as the folder “lib”.), the user can run AFP to find metabolic pathways by the following command line:
+1. Please install GUROBI before running our program AFP!!!
+2. AFP.jar requires the files “gurobi.jar” and “ujmp-complete-0.2.5.jar” in the folder “lib” of the directory of AFP on Github. The user should download the directory of AFP (including the folder “lib” and AFP.jar) on Github to run AFP.jar. On the GitHub page of AFP, you can click the button “code”-> ”Download ZIP” to download the directory of AFP.
+3. After downloading the directory of AFP on Github (AFP.jar should be in the same directory as the folder “lib”.), the user can run AFP to find metabolic pathways by the following command line:
 java -jar (the directory of AFP.jar) (the directory of configure file)
 For example: 
 java -jar D:\\AFP-master\\AFP.jar D:\\AFP-master\\config.txt 
 The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file. 
 Remainder:
-
 **Note that:**
-1. **Remainder:** Please install GUROBI before running our program AFP!!!
-2. AFP.jar **should be** in the same directory as the folder “lib”. 
-3. The user **must replace** the gurobi.jar file in the folder “lib” with the user’s own gurobi.jar file. You can find your gurobi.jar file in the setup folder “lib” of GGUROBI. For example, in Windows, your gurobi.jar file is usually located at “C:/gurobi/win64/lib/gurobi.jar”, and in Linux, it is usually located at “public/software/apps/gurobi/linux/lib/gurobi.jar”.
-
 Here we also provide four sample configure files AFP-S-NT.txt, AFP-S-T.txt, AFP-NS-NT.txt, AFP-NS-T.txt for four searching modes: AFP-S-NT, AFP-S-T, AFP-NS-NT, AFP-NS-T. **AFP-S-NT** searches the pathways containing non-conserved atom group exchange in the reactions from given start to target compounds. **AFP-S-T** searches the pathways transferring conserved atom groups from the given start to target compounds. **AFP-NS-NT** searches the pathways containing non-conserved atom group exchange in the reactions from an arbitrary start compound to given target compound. **AFP-NS-T** searches the pathways transferring conserved atom groups from an arbitrary start compound to given target compound.
 
 # Running parameters
