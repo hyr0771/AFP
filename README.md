@@ -22,8 +22,9 @@ The search results can be found in "resultDirectory". This "resultDirectory" can
 **Note that:**
 Here we also provide four sample configure files AFP-S-NT.txt, AFP-S-T.txt, AFP-NS-NT.txt, AFP-NS-T.txt for four searching modes: AFP-S-NT, AFP-S-T, AFP-NS-NT, AFP-NS-T. **AFP-S-NT** searches the pathways containing non-conserved atom group exchange in the reactions from given start to target compounds. 
 **AFP-S-T** searches the pathways transferring conserved atom groups from the given start to target compounds. 
-**AFP-NS-NT** searches the pathways containing non-conserved atom group exchange in the reactions from an arbitrary start compound to given target compound. 
+**AFP-NS-NT** searches the pathways containing non-conserved atom group exchange in the reactions from an arbitrary start compound to given target compound.
 **AFP-NS-T** searches the pathways transferring conserved atom groups from an arbitrary start compound to given target compound.
+
 
 # Running parameters
 <a name="2">The user can use configure file to specify the running parameters of AFP and the following table shows the illustration for specifying configure file.</a>
