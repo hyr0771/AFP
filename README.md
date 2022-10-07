@@ -11,11 +11,14 @@ The program of AFP model was packaged as a JAR bundle called AFP.jar. The user c
 1. Please install GUROBI before running our program AFP!!!
 2. AFP.jar requires the files “gurobi.jar” and “ujmp-complete-0.2.5.jar” in the folder “lib” of the directory of AFP on Github. The user should download the directory of AFP (including the folder “lib” and AFP.jar) on Github to run AFP.jar. On the GitHub page of AFP, you can click the button “code”-> ”Download ZIP” to download the directory of AFP.
 3. After downloading the directory of AFP on Github (AFP.jar should be in the same directory as the folder “lib”.), the user can run AFP to find metabolic pathways by the following command line:
+
 java -jar (the directory of AFP.jar) (the directory of configure file)
+
 For example: 
 java -jar D:\\AFP-master\\AFP.jar D:\\AFP-master\\config.txt 
+
 The search results can be found in "resultDirectory". This "resultDirectory" can be specified by the user in the configure file. 
-Remainder:
+
 **Note that:**
 Here we also provide four sample configure files AFP-S-NT.txt, AFP-S-T.txt, AFP-NS-NT.txt, AFP-NS-T.txt for four searching modes: AFP-S-NT, AFP-S-T, AFP-NS-NT, AFP-NS-T. **AFP-S-NT** searches the pathways containing non-conserved atom group exchange in the reactions from given start to target compounds. **AFP-S-T** searches the pathways transferring conserved atom groups from the given start to target compounds. **AFP-NS-NT** searches the pathways containing non-conserved atom group exchange in the reactions from an arbitrary start compound to given target compound. **AFP-NS-T** searches the pathways transferring conserved atom groups from an arbitrary start compound to given target compound.
 
